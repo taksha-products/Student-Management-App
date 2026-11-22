@@ -189,7 +189,7 @@ export default function ChildBusLiveScreen() {
   // Live map: full-bleed under the status bar, chrome floats on the map (same as web phone layout).
   if (!loading && showMap && view?.position && view.bus) {
     return (
-      <View style={[styles.root, { backgroundColor: "#E5E7EB", paddingTop: insets.top }]}>
+      <View style={[styles.root, { backgroundColor: "#E5E7EB", paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <View style={styles.mapFull}>
           <ParentBusMap
             view={view}
@@ -204,7 +204,7 @@ export default function ChildBusLiveScreen() {
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.background, paddingTop: insets.top }]}>
+    <View style={[styles.root, { backgroundColor: theme.background, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.topBar}>
         <Pressable onPress={goBack} style={styles.backBtn} accessibilityLabel="Go back">
           <Ionicons name="chevron-back" size={22} color={INK} />

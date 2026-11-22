@@ -117,7 +117,16 @@ export const apiRequest = async <T>(
     try {
       payload = JSON.parse(text);
     } catch {
-      payload = { message: text };
+      // Never surface raw HTML error pages (e.g. "Cannot GET /api/…") to parents.
+      const looksLikeHtml = /^\s*</.test(text);
+      payload = looksLikeHtml
+        ? {
+            message:
+              response.status === 404
+                ? "This feature isn't available right now."
+                : "Something went wrong. Try again."
+          }
+        : { message: text };
     }
   }
 

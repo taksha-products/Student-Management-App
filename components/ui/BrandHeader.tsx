@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -22,6 +23,7 @@ export const BrandHeader = ({
   title?: string;
 }) => {
   const isHome = !title;
+  const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
   const firstName = user?.name?.split(" ")[0] ?? "Parent";
@@ -49,7 +51,7 @@ export const BrandHeader = ({
           <Pressable
             hitSlop={8}
             style={styles.iconBtn}
-            onPress={() => Alert.alert("Notifications", "No new notifications.")}
+            onPress={() => router.push("/(app)/notifications")}
           >
             <Ionicons name="notifications-outline" size={26} color={brandDark} />
             <View style={[styles.notifDot, { backgroundColor: theme.danger }]} />
@@ -57,9 +59,7 @@ export const BrandHeader = ({
           <Pressable
             hitSlop={8}
             style={styles.iconBtn}
-            onPress={() =>
-              Alert.alert("Help", "Contact your school office for support with fees or bus.")
-            }
+            onPress={() => router.push("/(app)/help")}
           >
             <Ionicons name="help-circle-outline" size={28} color={brandDark} />
           </Pressable>

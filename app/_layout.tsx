@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { DialogHost } from "../components/ui/DialogHost";
 import { AuthProvider } from "../contexts/AuthContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
 
@@ -21,6 +22,7 @@ export default function RootLayout() {
           <ThemeProvider>
             <StatusBar style="dark" />
             <Stack screenOptions={{ headerShown: false }} />
+            <DialogHost />
           </ThemeProvider>
         </AuthProvider>
       </ErrorBoundary>
