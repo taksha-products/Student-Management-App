@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { Tabs } from "expo-router";
 import type { BottomTabBarProps } from "expo-router/tabs";
 import { useEffect, useRef, useState } from "react";
@@ -135,6 +136,13 @@ const GlassTabBar = ({ state, descriptors, emitter, navigateToTab, insets }: Bot
       pointerEvents="box-none"
       style={[styles.container, { paddingBottom: Math.max(insets.bottom, 10) }]}
     >
+      {/* Content fades out as it scrolls down behind the bar, so nothing shows through it. */}
+      <LinearGradient
+        pointerEvents="none"
+        colors={["rgba(255,255,255,0)", "rgba(255,255,255,0.9)", "#FFFFFF"]}
+        locations={[0, 0.4, 0.75]}
+        style={styles.fade}
+      />
       <View
         style={styles.barWrap}
         onLayout={(event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width)}
@@ -248,6 +256,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: CIRCLE_LIFT + 6
   },
+  fade: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
+  },
   barWrap: { height: BAR_HEIGHT },
   glass: {
     position: "absolute",
@@ -267,7 +282,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.62)"
+    backgroundColor: "rgba(255, 255, 255, 0.86)"
   },
   slots: {
     position: "absolute",

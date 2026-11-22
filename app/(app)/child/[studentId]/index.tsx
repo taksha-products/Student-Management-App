@@ -10,10 +10,6 @@ import {
   View
 } from "react-native";
 
-import {
-  RazorpayCheckoutModal,
-  type RazorpayCheckoutParams
-} from "../../../../components/RazorpayCheckoutModal";
 import { AppHeader } from "../../../../components/ui/AppHeader";
 import { Badge } from "../../../../components/ui/Badge";
 import { Button } from "../../../../components/ui/Button";
@@ -45,6 +41,8 @@ import type {
   StudentFeeLedgerView
 } from "../../../../lib/types";
 import { showDialog } from "../../../../lib/dialog";
+import { openRazorpayCheckout } from "../../../../lib/razorpay";
+import { RazorpayCheckoutError, type RazorpaySuccess } from "../../../../lib/razorpayTypes";
 
 type Tab = "dues" | "history" | "transport";
 
@@ -65,8 +63,6 @@ export default function ChildDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [payingKey, setPayingKey] = useState<string | null>(null);
-  const [checkout, setCheckout] = useState<RazorpayCheckoutParams | null>(null);
-  const [activeFeePaymentId, setActiveFeePaymentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successReceipt, setSuccessReceipt] = useState<string | null>(null);
   const [academicYear, setAcademicYear] = useState<string>("");
@@ -165,19 +161,42 @@ export default function ChildDetailScreen() {
         throw new Error("Razorpay order was not created. Check Razorpay keys.");
       }
 
-      setActiveFeePaymentId(intent.feePaymentId);
-      setCheckout({
-        keyId: order.keyId,
-        orderId: order.orderId,
-        amount: order.amount,
-        currency: order.currency || "INR",
-        name: theme.displayName,
-        description: intent.description || `${item.feeHeadName} · ${item.displayLabel}`,
-        themeColor: theme.brand,
-        prefillName: user?.name,
-        prefillContact: ledger.student.parentPhone || user?.phone,
-        prefillEmail: user?.email
-      });
+      let result: RazorpaySuccess;
+      try {
+        // Native Razorpay SDK on phones (UPI apps, netbanking, cards); checkout.js on web.
+        result = await openRazorpayCheckout({
+          keyId: order.keyId,
+          orderId: order.orderId,
+          amount: order.amount,
+          currency: order.currency || "INR",
+          name: theme.displayName,
+          description: intent.description || `${item.feeHeadName} · ${item.displayLabel}`,
+          themeColor: theme.brand,
+          prefillName: user?.name,
+          prefillContact: ledger.student.parentPhone || user?.phone,
+          prefillEmail: user?.email
+        });
+      } catch (err) {
+        if (err instanceof RazorpayCheckoutError) {
+          if (!err.cancelled) {
+            showDialog({
+              tone: "error",
+              title: "Payment failed",
+              message: [
+                err.message,
+                err.paymentId ? `Payment ID: ${err.paymentId}` : null,
+                "No money was taken for this attempt. Try another method or try again."
+              ]
+                .filter(Boolean)
+                .join("\n\n")
+            });
+          }
+          return;
+        }
+        throw err;
+      }
+
+      await onCheckoutSuccess(intent.feePaymentId, result);
     } catch (err) {
       showDialog({
         tone: "error",
@@ -194,24 +213,15 @@ export default function ChildDetailScreen() {
     }
   };
 
-  const onCheckoutSuccess = async (result: {
-    razorpay_order_id: string;
-    razorpay_payment_id: string;
-    razorpay_signature: string;
-  }) => {
-    if (!activeFeePaymentId) {
-      return;
-    }
+  const onCheckoutSuccess = async (feePaymentId: string, result: RazorpaySuccess) => {
     try {
       const verified = await verifyPayment({
         razorpayOrderId: result.razorpay_order_id,
         razorpayPaymentId: result.razorpay_payment_id,
         razorpaySignature: result.razorpay_signature,
-        feePaymentId: activeFeePaymentId
+        feePaymentId
       });
       setSuccessReceipt(verified.receiptNumber);
-      setCheckout(null);
-      setActiveFeePaymentId(null);
       await load();
       showDialog({
         tone: "success",
@@ -442,21 +452,6 @@ export default function ChildDetailScreen() {
         </>
       )}
 
-
-      <RazorpayCheckoutModal
-        visible={!!checkout}
-        params={checkout}
-        onDismiss={() => {
-          setCheckout(null);
-          setActiveFeePaymentId(null);
-        }}
-        onError={(message) => {
-          setCheckout(null);
-          setActiveFeePaymentId(null);
-          showDialog({ tone: "error", title: "Payment failed", message });
-        }}
-        onSuccess={(result) => void onCheckoutSuccess(result)}
-      />
     </Screen>
   );
 }
