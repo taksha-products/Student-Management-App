@@ -22,6 +22,7 @@ import {
   type ParentNotification
 } from "../../lib/inbox";
 import { INK, SOFT_TEXT } from "../../lib/pastel";
+import { goBackOr } from "../../lib/navigation";
 
 const typeIcon = (type: string): keyof typeof Ionicons.glyphMap => {
   switch (type) {
@@ -94,7 +95,7 @@ export default function NotificationsScreen() {
     <View style={[styles.root, { backgroundColor: theme.background, paddingTop: insets.top }]}>
       <View style={styles.topBar}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => goBackOr(router, "/(app)/(tabs)")}
           style={[styles.backBtn, { borderColor: theme.border, backgroundColor: theme.card }]}
         >
           <Ionicons name="chevron-back" size={22} color={theme.text} />

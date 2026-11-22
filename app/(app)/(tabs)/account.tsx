@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { BrandHeader } from "../../../components/ui/BrandHeader";
 import { Card } from "../../../components/ui/Card";
@@ -10,6 +10,7 @@ import { Screen } from "../../../components/ui/Screen";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { INK, pastelAt, SOFT_TEXT, SUCCESS_GREEN } from "../../../lib/pastel";
+import { showDialog } from "../../../lib/dialog";
 
 type MenuItem = {
   key: string;
@@ -56,10 +57,10 @@ export default function ProfileScreen() {
       label: "About App",
       icon: "information-circle-outline",
       onPress: () =>
-        Alert.alert(
-          "About App",
-          "EduNex Parent\nFees, bus tracking, and school updates.\nBranding is set by your school."
-        )
+        showDialog({
+          title: "About EduNex Parent",
+          message: "Fees, bus tracking, and school updates in one place. Branding is set by your school."
+        })
     }
   ];
 

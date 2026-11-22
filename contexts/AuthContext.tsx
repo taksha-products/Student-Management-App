@@ -7,7 +7,6 @@ import {
   useState,
   type ReactNode
 } from "react";
-import { Alert } from "react-native";
 
 import { apiRequest } from "../lib/api";
 import {
@@ -21,6 +20,7 @@ import {
   setSessionExpiredHandler
 } from "../lib/sessionEvents";
 import type { AuthUser, ParentSchoolOption } from "../lib/types";
+import { showDialog } from "../lib/dialog";
 
 interface SessionResponse {
   success?: boolean;
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setSessionExpiredHandler(() => {
       setUser(null);
-      Alert.alert("Session expired", "Please sign in again.");
+      showDialog({ tone: "warning", title: "Session expired", message: "Sign in again to continue." });
     });
     return () => setSessionExpiredHandler(null);
   }, []);

@@ -2,11 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { Image } from "expo-image";
 import { Redirect, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -112,6 +112,16 @@ export default function LoginScreen() {
     return () => clearTimeout(id);
   }, [resendIn]);
 
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+
+  // When the keyboard opens, bring the field and its button into view.
+  useEffect(() => {
+    const sub = Keyboard.addListener("keyboardDidShow", () => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    });
+    return () => sub.remove();
+  }, []);
+
   if (bootstrapping) {
     return (
       <View style={[styles.root, { justifyContent: "center", alignItems: "center" }]}>
@@ -216,9 +226,12 @@ export default function LoginScreen() {
       <SafeAreaView edges={["top", "bottom"]} style={styles.flex}>
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          // Android draws edge-to-edge, so it no longer resizes for the keyboard on
+          // its own — lift the content on both platforms.
+          behavior="padding"
         >
           <ScrollView
+            ref={scrollRef}
             contentContainerStyle={styles.scroll}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}

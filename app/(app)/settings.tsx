@@ -3,7 +3,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -20,6 +19,8 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { ApiError } from "../../lib/api";
 import { fetchProfile, updateProfile, type ParentProfile } from "../../lib/inbox";
 import { INK, SOFT_TEXT } from "../../lib/pastel";
+import { showDialog } from "../../lib/dialog";
+import { goBackOr } from "../../lib/navigation";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -45,10 +46,11 @@ export default function SettingsScreen() {
           setName(data.name);
         } catch (err) {
           if (active) {
-            Alert.alert(
-              "Profile",
-              err instanceof ApiError ? err.message : "Unable to load profile"
-            );
+            showDialog({
+              tone: "error",
+              title: "Couldn't load profile",
+              message: err instanceof ApiError ? err.message : "Unable to load profile"
+            });
           }
         } finally {
           if (active) {
@@ -65,16 +67,20 @@ export default function SettingsScreen() {
   const onSave = async () => {
     const trimmed = name.trim();
     if (trimmed.length < 2) {
-      Alert.alert("Name", "Please enter at least 2 characters.");
+      showDialog({ tone: "warning", title: "Name too short", message: "Enter at least 2 characters." });
       return;
     }
     setSaving(true);
     try {
       const data = await updateProfile(trimmed);
       setProfile(data);
-      Alert.alert("Saved", "Your display name was updated.");
+      showDialog({ tone: "success", title: "Saved", message: "Your display name was updated." });
     } catch (err) {
-      Alert.alert("Save failed", err instanceof ApiError ? err.message : "Unable to save");
+      showDialog({
+        tone: "error",
+        title: "Save failed",
+        message: err instanceof ApiError ? err.message : "Unable to save"
+      });
     } finally {
       setSaving(false);
     }
@@ -84,7 +90,7 @@ export default function SettingsScreen() {
     <View style={[styles.root, { backgroundColor: theme.background, paddingTop: insets.top }]}>
       <View style={styles.topBar}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => goBackOr(router, "/(app)/(tabs)/account")}
           style={[styles.backBtn, { borderColor: theme.border, backgroundColor: theme.card }]}
         >
           <Ionicons name="chevron-back" size={22} color={theme.text} />

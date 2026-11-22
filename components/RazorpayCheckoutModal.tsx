@@ -1,4 +1,5 @@
 import { Modal, Platform, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 import { Button } from "./ui/Button";
@@ -41,6 +42,7 @@ export const RazorpayCheckoutModal = ({
   onError: (message: string) => void;
 }) => {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   if (!params) {
     return null;
@@ -125,8 +127,25 @@ export const RazorpayCheckoutModal = ({
 </html>`;
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onDismiss}>
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onDismiss}
+      statusBarTranslucent
+      navigationBarTranslucent
+    >
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: theme.background,
+            // Keep Razorpay's own buttons clear of the status bar and the
+            // Android back / home / recents bar (or iOS home indicator).
+            paddingTop: insets.top + 8,
+            paddingBottom: insets.bottom
+          }
+        ]}
+      >
         <View style={styles.top}>
           <Text style={[styles.title, { color: theme.text }]}>Complete payment</Text>
           <Button label="Close" variant="ghost" onPress={onDismiss} />
@@ -191,7 +210,7 @@ export const RazorpayCheckoutModal = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 48 },
+  container: { flex: 1 },
   top: {
     paddingHorizontal: 16,
     paddingBottom: 8,

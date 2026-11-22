@@ -3,7 +3,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -45,6 +44,7 @@ import type {
   ParentChild,
   StudentFeeLedgerView
 } from "../../../../lib/types";
+import { showDialog } from "../../../../lib/dialog";
 
 type Tab = "dues" | "history" | "transport";
 
@@ -179,14 +179,16 @@ export default function ChildDetailScreen() {
         prefillEmail: user?.email
       });
     } catch (err) {
-      Alert.alert(
-        "Payment unavailable",
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
+      showDialog({
+        tone: "error",
+        title: "Payment unavailable",
+        message:
+          err instanceof ApiError
             ? err.message
-            : "Could not start payment. Try again."
-      );
+            : err instanceof Error
+              ? err.message
+              : "Could not start payment. Try again."
+      });
     } finally {
       setPayingKey(null);
     }
@@ -211,12 +213,17 @@ export default function ChildDetailScreen() {
       setCheckout(null);
       setActiveFeePaymentId(null);
       await load();
-      Alert.alert("Payment successful", `Receipt ${verified.receiptNumber}`);
+      showDialog({
+        tone: "success",
+        title: "Payment successful",
+        message: `Receipt ${verified.receiptNumber}`
+      });
     } catch (err) {
-      Alert.alert(
-        "Verification failed",
-        err instanceof ApiError ? err.message : "Contact school if amount was deducted"
-      );
+      showDialog({
+        tone: "error",
+        title: "Verification failed",
+        message: err instanceof ApiError ? err.message : "Contact school if amount was deducted"
+      });
     }
   };
 
@@ -446,7 +453,7 @@ export default function ChildDetailScreen() {
         onError={(message) => {
           setCheckout(null);
           setActiveFeePaymentId(null);
-          Alert.alert("Payment failed", message);
+          showDialog({ tone: "error", title: "Payment failed", message });
         }}
         onSuccess={(result) => void onCheckoutSuccess(result)}
       />

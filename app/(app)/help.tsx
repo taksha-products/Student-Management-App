@@ -3,7 +3,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   Pressable,
   StyleSheet,
@@ -18,6 +17,8 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { ApiError } from "../../lib/api";
 import { fetchSupportInfo, type SupportInfo } from "../../lib/inbox";
 import { INK, SOFT_TEXT } from "../../lib/pastel";
+import { showDialog } from "../../lib/dialog";
+import { goBackOr } from "../../lib/navigation";
 
 /** Digits only after stripping common phone punctuation; 7–15 digits (E.164-ish). */
 function sanitizePhoneForTel(raw: string): string | null {
@@ -46,7 +47,11 @@ function isValidEmail(raw: string): boolean {
 async function openTel(phone: string) {
   const sanitized = sanitizePhoneForTel(phone);
   if (!sanitized) {
-    Alert.alert("Invalid phone number", "This school’s contact number looks invalid.");
+    showDialog({
+      tone: "warning",
+      title: "Invalid phone number",
+      message: "This school’s contact number looks invalid."
+    });
     return;
   }
   await Linking.openURL(`tel:${sanitized}`);
@@ -55,7 +60,11 @@ async function openTel(phone: string) {
 async function openMailto(email: string) {
   const trimmed = email.trim();
   if (!isValidEmail(trimmed)) {
-    Alert.alert("Invalid email", "This school’s support email looks invalid.");
+    showDialog({
+      tone: "warning",
+      title: "Invalid email",
+      message: "This school’s support email looks invalid."
+    });
     return;
   }
   await Linking.openURL(`mailto:${trimmed}`);
@@ -100,7 +109,7 @@ export default function HelpScreen() {
     <View style={[styles.root, { backgroundColor: theme.background, paddingTop: insets.top }]}>
       <View style={styles.topBar}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => goBackOr(router, "/(app)/(tabs)/account")}
           style={[styles.backBtn, { borderColor: theme.border, backgroundColor: theme.card }]}
         >
           <Ionicons name="chevron-back" size={22} color={theme.text} />

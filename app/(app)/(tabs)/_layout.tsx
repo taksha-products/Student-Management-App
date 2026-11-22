@@ -30,7 +30,7 @@ const BAR_HEIGHT = 76;
 /** Fully rounded (pill) ends: 50% of the bar height. */
 const BAR_RADIUS = BAR_HEIGHT / 2;
 /** Side padding so the end tabs sit clear of the pill's rounded ends. */
-const SLOT_PAD = 48;
+const SLOT_PAD = 16;
 const CIRCLE = 64;
 /** How far the active circle rises above the bar's top edge. */
 const CIRCLE_LIFT = 34;
